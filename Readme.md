@@ -544,6 +544,355 @@ student_attendance_keys = student_attendance.keys()
 student_attendance_values = student_attendance.values()
 ```
 
+## Unpacking Variables in Python
+
+Earlier, we had seen the way to initialize a tuple
+```
+t = (1, 2)
+```
+However, to declare a tuple, we do not need to use the brackets
+```
+t = 1, 2
+```
+We need to use brackets only where we want python to explicity treat the values as part of a tuple
+```
+l = [(1, 2)]
+```
+In this case, if you do not add the brackets, python will just give us a list of two seperate values 1 and 2 instead of a list with a singe tuple (1, 2) like we wanted.
+
+We can run
+```
+t = 1, 2
+x, y = t
+```
+Here the values in the tuple gets unpacked into the two variables x and y.
+
+So when we do
+```
+student_attendance = {'Rolf':96, 'Bob':80, 'Anne':100}
+for student, attendance in student_attendance.items():
+    print(f'{student}: {attendance}')
+```
+*student_attendance.items()* returns a list of tuples containing (key, value) and then we are iterating over each tuple and unpacking the items in the tuple to student and attendance.
+
+If we want to ignore an item in a tuple while unpacking, we can assign it to a variable _. This is the standard followed in the python communnity.
+```
+persons = ('Bob', 24, 'Mechanic')
+name, _, profession = persons
+print('Name: ', name, ' profession: ', profession)
+```
+In the code block above, we did not want to use age, so we assign it to the variable _ and will not use it again.
+
+Suppose we have a list and we want to unpack it in such a way that we assign the first item of the list in one variable and the rest of the items in a seperate list
+```
+l = [1, 2, 3, 4, 5]
+first, *last = l
+```
+Say we want to do the opposite and get the last item of a list in a variable
+```
+l = [1, 2, 3, 4, 5]
+*first, last = l
+```
+
+## Functions in Python
+
+We have seen some built-in functions like print(), len() etc. Now, let us define our own function. The pros of creating our own functions and giving them a name is that we can resuse the block of code within that function as many times as we want.
+```
+def hello():
+    print('Hello')
+```
+Python treats the hello() function as a callable variable. When we define a function, the code block inside the function does not run. The code block runs only when we call the function 
+```
+hello()
+```
+Running the above line prints 'Hello' in the console.
+
+As we have seen with the if statements, while and for loops, python knows which code block to run because of the indentation. 
+
+Lets look at a more elaborate function.
+```
+def user_age_in_seconds():
+    age = int(input('Enter your age: '))
+    age_in_seconds = age * 365 * 24 * 60 * 60
+    print(f'Your age in second: {age_in_seconds}.')
+```
+Inorder to run the above code, we have to call the function
+```
+user_age_in_seconds()
+```
+
+An important point to remember while naming functions is to not use the name of a python built-in function. Doing this will override the built-in function and its behaviour will change. If we call the built-in function at a later point, the code block defined by us will execute rather than the built-in code block.
+```
+def print(s):
+    x = 2
+    y = 2
+    return x+y
+```
+When we call the print() function elsewhere within the same program, it will always return 4.
+
+We can send data to functions by defining functions with parameters.
+```
+def add(x, y):
+    return x+y
+```
+We have placed the parameters inside the brackets in the above format. When you call the function, the two variables are created in local function namespace. These variables can then be used inside the function body.
+```
+add(5, 3)
+```
+When we call the function, we pass the arguments to the function and these arguments are assigned to the respective variables.
+
+If we define a function without parameters and try to pass it arguments when calling it, python will throw an error
+```
+def say_hello():
+    print('hello')
+say_hello('Bob')
+```
+Similarly, if we define a function with parameters, then when calling the function, we have to pass the required number of arguments, else, python will throw an error.
+```
+def say_hello(name):
+    print('hello, {name}')
+say_hello()
+```
+
+All the paramters that we have been using till now are all positional parameters. This means the position in which they are defined will determine the argument that is assigned to it.
+```
+def say_hello(name, surname):
+    print(f'hello, {name} {surname}')
+```
+When we call the function
+```
+say_hello('Bob', 'Smith')
+```
+'Bob' is assigned to name and 'Smith' is assigned to surname as that is the order in which these arguments are passed. This is because Python has no other way to determine how arguments are assigned to parameters.
+
+If we assign the arguments to the parameters at the time of function call, then the order in which we pass them will not matter.
+```
+say_hello(surname='Smith', name='Bob')
+```
+
+A positional argument cannot follow a keyword argument. So we cannot call
+```
+say_hello(name='Bob', 'Smith')
+```
+Positional arguments have to go first and keyword arguments later.
+
+We can assign default parameter values while defining functions
+```
+def add(x, y=8):
+    print(x + y)
+```
+Now we can call
+```
+add(5)
+```
+Here, x will take the argument 5 and y will take the default parameter value and this will print 13 in the console. Note that if you do not want to use the default value, we can call
+```
+add(5, 3)
+```
+This will print 8 in the console. x takes the value 5 and y takes the value 3.
+
+When we define a function, a positional parameter cannot follow a parameter with default value.
+```
+def add(x = 5, y):
+    print(x+y)
+```
+Python will throw an error here.
+
+When using default parameter values, the parameter is assigned the defalt value at the time of creation.
+```
+default_y = 3
+def add(x, y=default_y):
+    print(x+y)
+```
+At this point y has already been assigned the value 3. 
+If we then do
+```
+default_y = 5
+add(5)
+```
+This will print 8 in the console and not 10, because changing the value of default_y will not change the default value assigned to the paramter y.
+
+We can have functions return values
+```
+def add(x, y):
+    print(x+y)
+```
+If we call the function
+```
+result = add(5,5)
+print(result)
+```
+This will first print 10 in the console followed by None. None is a special value in a python that means no value or undeclared value. As we have not specified a return statement in the add function definition, it return None by default.
+
+```
+def add(x,y):
+    return (x+y)
+```
+Calling the function now
+```
+result = add(5, 5)
+print(result)
+```
+Now the function itself will not print 10. It will calculate the result of addition and return it and this return value is assigned to the result variable. Then python prints 10 in the console when it runs the last line of the code block.
+
+## Lambda functions in Python
+
+Lambda functions are used to operate on inputs and return outputs. They are not used to perform actions.
+```
+add = lambda x, y: x+y
+add(5, 5)
+```
+Here, x and y are parameters. You dont need to specify the return keyword as lambdas by default return the result of the operations. The function reference is stored in the add variable.
+
+There are 4 parts to a lambda function. There is lambda keyword, parameter list, colon and the return value.
+
+Lets look at an example we saw earlier.
+```
+def double(x):
+    return x*2
+sequence = [1, 3, 5, 9]
+doubled = [double(x) for x in sequence]
+```
+We get a new list called doubled that has double each value in the sequence list. We can perform the same operation this way
+```
+def double(x):
+    return x*2
+doubled = map(double, sequence)
+```
+This produces the same result as the previous block of code. The map is a built-in function in python and it returns a map object. We will talk about this seperately. The important point is doubled is not quite a list yet. To make it a list we have to run
+```
+doubled = list(doubled)
+```
+
+Lets do the same thing using a lambda function.
+```
+sequence = [1, 3, 5, 9]
+doubled = [(lambda x: x * 2)(x) for x in sequence]
+doubled = list(map(lambda x: x*2, sequence))
+```
+
+## Unpacking arguments
+
+Lets create a multiply function that takes in any number of arguments
+```
+def multiply(*args):
+    print(args)
+```
+When we call
+```
+multiply(1, 3, 5)
+```
+It will print (1, 3, 5) in the console. As we have seen in unpacking variables earlier, when we put *args as the parameter and we pass multiple arguments, they get collected into a tuple.
+
+So now we can formally define a multiply function.
+```
+def multiply(*args):
+    product = 1
+    for arg in args:
+        product *= arg
+    return product
+```
+When we call
+```
+print(multiply(1, 3, 5))
+```
+15 is printed to the console.
+
+We can do this vice-versa as well
+```
+def add(x, y):
+    return x + y
+nums = [1, 4]
+print(add(*nums))
+```
+We are destructuring the list into its individual items and then assigning these items to the function parameters respectively. Note that the number of parameters should be equal to the number of items in the list.
+
+Lets create a mini calculator that supports addition and multiplication
+```
+def multiply(*args):
+    product = 1
+    for arg in args:
+        product *= arg
+    return product
+
+def apply(*args, operator):
+    if operator == '*':
+        return multiply(*args)
+    elif operator == '+':
+        return sum(args)
+    else:
+        print('Invalid operator')
+        return None
+```
+There are a few things going on here. 
+
+First, the parameters will take any number of positional arguments followed by a named argument. This means when calling apply function, the operator keyword has to be specified, otherwise python will throw and error.
+```
+apply(1, 3, 5, operator='+')
+```
+This is because all the parameters after a *args parameter should be either named parameters or keyword parameters.
+
+Second, we have to unpack the args tuple when passing it as argument when calling the multiply function. If we dont unpack the tuple to its individual items, the args parameter in the multiply function gets assigned a tuple of tuples with one tuple in it. It then iterates over the tuple of tuples and multiplies the one tuple with the product, which is 1, and returns a tuple.
+
+## Unpacking keyword arguments
+
+```
+def add(x, y):
+    return x+y
+nums = {'x':15, 'y':25}
+print(add(**nums))
+```
+This works because the parameter variable names are the same as the key names in the dictionary.
+
+## Dictionary Comprehensions in Python
+
+A dictionary comprehension is like a list comprehension, where we get a dictionary at the end of it. So we have to provide key-value mappings.
+```
+users = [
+    (0, 'Bob', 'password'),
+    (1, 'Rolf', 'bob123'),
+    (2, 'Jose', 'long4password'),
+    (3, 'username', '1234')
+]
+username_mapping = {user[1]: user for user in users}
+```
+This creates a dictionary in this format
+```
+{
+    'Bob': (0, 'Bob', 'password'),
+    'Rolf': (0, 'Rolf', 'bob123'),
+    'Jose': (0, 'Jose', 'long4password'),
+    'username': (0, 'username', '1234')
+}
+```
+Now accessing a user's details will be easy if you know their username. Say we ask a user to input their username and password, then we can perform the following operation easily, now that we have this mapping.
+```
+username_input = input('Enter your username: ')
+password_input = input('Enter your password: ')
+
+_, username, password = username_mapping[username_input]
+if password_input == password:
+    print('Logged in')
+else:
+    print('Password does not match!')
+```
+
+
+## Local and Global Scope in Python
+
+Consider this block of code
+```
+friends = ['Rolf', 'Bob']
+def add_friend():
+    friend_name = input('Enter friend's name: ')
+    friends = friends + [friend_name]
+```
+When we call the function add_friend(), python creates a variable in local function namespace called friends which is entirely different from the friends list defined outside the function or in the global namespace. Hence calling the function will throw an error.
+```
+UnboundLocalError: local variable 'friends' referenced before assignment
+```
+This means that python first adds the variable friends into the local namespace, then tries to access the value that it references. However, we have not assigned it any value and hence python is unable to find any value to perform the add operation.
+
 ## Nested Data Structures
 
 We can have a list of dictionaries
@@ -556,7 +905,7 @@ friends = [
 print(friends[0]['name'])
 ```
 The above code block will print 'Rolf' in the console.
-
+```
 
 
 ## Mutability in Python
