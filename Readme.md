@@ -832,10 +832,23 @@ apply(1, 3, 5, operator='+')
 ```
 This is because all the parameters after a *args parameter should be either named parameters or keyword parameters.
 
-Second, we have to unpack the args tuple when passing it as argument when calling the multiply function. If we dont unpack the tuple to its individual items, the args parameter in the multiply function gets assigned a tuple of tuples with one tuple in it. It then iterates over the tuple of tuples and multiplies the one tuple with the product, which is 1, and returns a tuple.
+Second, we have to unpack the args tuple when passing it as argument when calling the multiply function. If we dont unpack the tuple to its individual items, the args parameter in the multiply function gets assigned a tuple of tuples with one tuple in it. It then iterates over the tuple of tuples and multiplies the one tuple with the product, which is 1, and returns the tuple.
 
 ## Unpacking keyword arguments
 
+A function that takes in any number of keyword arguments
+```
+def named(**kwargs):
+    print(kwargs)
+
+print(named(name='Bob', age=25)
+```
+This will print
+```
+{'name':'Bob', 'age':25}
+```
+
+We can unpack a dictionary and pass it as keyword arguments.
 ```
 def add(x, y):
     return x+y
@@ -843,6 +856,52 @@ nums = {'x':15, 'y':25}
 print(add(**nums))
 ```
 This works because the parameter variable names are the same as the key names in the dictionary.
+
+We can do it this way as well
+```
+def add(**kwargs):
+    return kwargs['x']+kwargs['y']
+nums = {'x':15, 'y':25}
+print(add(**nums))
+```
+This will also print 40 to the console.
+
+```
+def named(**kwargs):
+    print(kwargs)
+
+def print_nicely(**kwargs):
+    named(**kwargs)
+    for arg, value in kwargs.items():
+        print(f'{arg}: {value}')
+```
+We call print_nicely function by passing 2 keyword arguments.
+```
+print_nicely(name='Bob', 'age':25)
+```
+These keyword arguments are collected in the kwargs parameter in the print_nicely function as a dictionary. 
+
+This dictionary is then unpacked and the sent as arguments to the named function where these named arguments are again collected as a dictionary by the kwargs parameter of the named function and printed out as a dictionary.
+
+Then we iterate over the kwargs dictionary of the print_nicely function and then print the key and its corresponding value. 
+
+We can combine *args and **kwargs in a function as its parameters. All the positional arguments will be collected by the *args parameter in the form of a tuple and the keyword arguments will be collected by the **kwargs parameter in the form of a dictionary.
+
+```
+def both(*args, **kwargs):
+    print(args)
+    print(kwargs)
+```
+Then when we call
+```
+both(1, 3, 5, name='Bob', age=25)
+```
+This will print out 
+```
+(1, 3, 5)
+{'name':'Bob', 'age'=25}
+```
+in the console.
 
 ## Dictionary Comprehensions in Python
 
@@ -877,7 +936,6 @@ else:
     print('Password does not match!')
 ```
 
-
 ## Local and Global Scope in Python
 
 Consider this block of code
@@ -905,14 +963,422 @@ friends = [
 print(friends[0]['name'])
 ```
 The above code block will print 'Rolf' in the console.
-```
-
 
 ## Mutability in Python
 
 
+## Object-Oriented Programming in Python
 
-## Functions in Python
+The purpose of object-oriented programming is to make a developer's life simpler. It allows us to develop entities that look like what we would work with in the real world.
 
-Functions are things that perform action or calculate outputs based on inputs (or both).
+Consider a dictionary
+```
+student = {'name':'Rolf', 'grades':(89, 90, 93, 78, 90)}
+```
+This is not a student itself, but contains data about students. Suppose we want to get Rolf's average grade.
+```
+def average(sequence):
+    return sum(sequence)/len(sequence)
+
+print(average(student['grades']))
+```
+
+Imagine if you could have a kind of variable called Rolf, that contained all the relevant information about Rolf and we could just call 
+```
+Rolf.average()
+```
+to get his average grade. Its like asking his average grade to Rolf directly. This looks so much better than
+```
+average(student['grades'])
+```
+
+Let us look at the way we initialize class in python.
+```
+class Student:
+    def __init__(self):
+        self.name = 'Rolf'
+        self.grades = (90, 90, 93, 78, 90)
+```
+We define a class using the *class* keyword and we give the class a name. Developers in Python follow the camel case convention when naming their classes. This means the first letter of each word in the name in capitalized and consecutive words are not seperated by underscore.
+
+Then, there is a function __init__() in which we have to provide a parameter called self. This parameter can be given any name, but by convention, we name it self. The parameter self is assigned the current instance of the class. It is through this variable that we access the attributes and methods of the current instance inside the class. The __init__() function is used by python to initialize attributes or run methods upon the creation of an object of the class.
+
+In order to make an object of the class
+```
+student = Student()
+```
+When we run this line, and object of the class is created by Python and the __init__() function is called to initialize the attributes we want to create and initialize. Then the reference to the object is stored in the variable student.
+
+To access attributes of the object
+```
+print(student.name)
+print(student.grades)
+```
+
+We can define functions within a class. These are called methods.
+
+```
+class Student:
+    def __init__(self):
+        self.name = 'Rolf'
+        self.grades = (90, 90, 93, 78, 90)
+    
+    def average_grade(self):
+        return sum(self.grades)/len(self.grades)
+```
+As you can see we need to specify a parameter, called self, in the function average_grade(), that will take the current instance of the class. It is through this instance that we access the attributes and methods of the object. 
+
+How do we access this new method?
+```
+student = Student()
+student.average_grade()
+```
+This is the same syntax as when we need to access the attributes. When we run it like this, it is the same as running
+```
+Student.average_grade(student)
+```
+In fact, Python does this in the background when we run student.average_grade().
+
+The __init__() method can take other parameters that will take arguments that we pass when we create an object of the class. Let us make the Student class generic, so that we can use it for any number of students and their grades
+```
+class Student:
+    def __init__(self, name, grades):
+        self.name = name
+        self.grades = grades
+    def average_grade(self):
+        return sum(self.grades)/len(self.grades)
+```
+Now we can create and instance of Rolf using the Student class that we defined above.
+```
+student_rolf = Student('Rolf', (90, 90, 93, 78, 90))
+```
+And we can calculate Rolf's grade average by running
+```
+student_rolf.average_grade()
+```
+
+## Magic methods in Python
+
+The __init__() is an example of a magic method in Python. Python calls these methods in the background when you do certain things. In the case of the init method, python call this method when you create an object of the class even if you did not specifically call the __init__() method.
+
+There are other magic methods in Python. Suppose we want to print the representation of an object of a class. Consider this class
+```
+class Person:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+```
+Lets create an object of the class Person and print it out.
+```
+person = Person('Bob', 21)
+print(person)
+```
+At this point, Python will print in the console, something that looks like '<__main__.Person object at 0106h9be88>'. This is the default representation of the person object currently.
+
+Python allows us to redefine the represenation of an object to a format we specify. This will be useful when we want to print out an object for users to view it in a readable format.
+
+The way to do this is to override a magic method in our class itself.
+```
+class Person:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+    def __str__(self):
+        return 'Name: ' + self.name + ', age: ' + str(self.age)
+```
+When we run
+```
+person = Person('Bob', 21)
+print(person)
+```
+Then Python will call the magic method that we have specified and print the following in the console.
+```
+Name: Bob, age: 21
+```
+
+Another way to do this is to use the __repr__() method
+```
+class Person:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+    def __repr__(self):
+        return f'<Person({self.name}, {self.age})>'
+```
+If the __str__() method is also specified, then when printing the object, Python will use the __str__() method as it is higher in the hierarchy.
+
+
+## Static Method and Class Method
+
+Lets define a class
+```
+class ClassTest:
+    def instance_method(self):
+        print(f'Called instance_method of {self}')
+    
+    @classmethod
+    def class_method(cls):
+        print(f'Called class_method of {cls}')
+```
+
+All functions in a class that use the instance parameter are call instance methods. These methods are usually accessed through the instance variable as we saw earlier.
+
+Class methods are defined like a regular method, except we specify a parameter cls in the function definition. Class methods are accessed using the class name itself.
+```
+ClassTest.class_method()
+```
+When we run the above line, in the background, Python calls the method this way. 
+```
+ClassTest.class_method(ClassTest)
+```
+
+To classify a method as a class method, we have include @classmethod above the def func_name() line. We study this seperately.
+
+Static methods are defined like a regular method, we do not need to specify any parameter in the function definition unlike the class method and instance methods.
+```
+class ClassTest:
+    def instance_method(self):
+        print(f'Called instance_method of {self}')
+    
+    @classmethod
+    def class_method(cls):
+        print(f'Called class_method of {cls}')
+    
+    @staticmethod
+    def static_method():
+        print('Called static_method')
+
+```
+We can call a static method by running
+```
+ClassTest.static_method()
+```
+
+If we want a method in the class that does not need to use the instance or class, we can decorate it with @staticmethod.
+If we want a method in the class that uses the class itself for something, we can decorate it with @classmethod and specify a parameter that will take the class.
+If we want a method in the class that uses the instance, we do not need to decorate it with anything, but we need specify a parameter that will take the instance that we are dealing with currently.
+
+Instance methods are used when we need to produce an action that uses data within the instance. If we want to change the data within any instance, then too, we need to use the instance method.
+
+Class methods are often used a factories.
+
+Static methods are used to just place a method inside a class because as a developer you feel the method belongs inside the class.
+
+Lets look at how class methods are used as factories.
+```
+class Book:
+    TYPES = ('hardcover', 'paperback')
+```
+To access the class attribute TYPES we run
+```
+Book.TYPES
+```
+Then we include the __init__() and other attrributes
+```
+class Book:
+    TYPES = ('hardcover', 'paperback')
+    def __init__(self, name, book_type, weight):
+        self.name = name
+        self.book_type = book_type
+        self.weight = weight
+    def __repr__(self):
+        return f'<Book({self.name}, {self.book_type}, {self.weight})>'
+```
+If you want to avoid passing a book_type and if you want to restrict the book type to one of two book types specified in the TYPES tuple, then we can structure the code like this
+
+```
+class Book:
+    TYPES = ('hardcover', 'paperback')
+    def __init__(self, name, book_type, weight):
+        self.name = name
+        self.book_type = book_type
+        self.weight = weight
+    def __repr__(self):
+        return f'<Book({self.name}, {self.book_type}, {self.weight})>'
+    
+    @classmethod
+    def hardcover(cls, name, weight):
+        return Book(name, Book.TYPES[0], weight)
+    
+    @classmethod
+    def paperback(cls, name, weight):
+        return Book(name, Book.TYPES[1], weight)
+```
+Now, when we want to create an object, we can directly call the classmethod
+```
+book = Book.hardcover('Harry Potter', 1500)
+```
+Notice we are not using cls anywhere in the two class methods. In this case, Book is the cls. So, instead of cls, we should use cls.
+
+```
+class Book:
+    TYPES = ('hardcover', 'paperback')
+    def __init__(self, name, book_type, weight):
+        self.name = name
+        self.book_type = book_type
+        self.weight = weight
+    def __repr__(self):
+        return f'<Book({self.name}, {self.book_type}, {self.weight})>'
+    
+    @classmethod
+    def hardcover(cls, name, weight):
+        return cls(name, cls.TYPES[0], weight)
+    
+    @classmethod
+    def paperback(cls, name, weight):
+        return cls(name, cls.TYPES[1], weight)
+```
+
+## Inheritance in Python
+
+Inheritance allows one class to take methods and attributes of another class.
+```
+class Device:
+    def __init__(self, name, connected_by):
+        self.name = name
+        self.connected_by = connected_by
+        self.connected = True
+    
+    def __str__(self):
+        return f'Device {self.name!r} ({self.connected_by})'
+    
+    def disconnect(self):
+        self.connected = False
+        print('Disconnected')
+```
+The !r at the end of self.name is to call the repr method of the attribute self.name. The quotes appear around the name without us having to put the quotes there.
+
+Consider we make a printer object
+```
+printer = Device('printer', 'USB')
+print(printer)
+printer.disconnect()
+```
+That looks good.
+
+Lets say we want to add a functionality to this class that prints out a document. However, we cannot add it to the Device class as it can be used to create an object of any device that can connect to a computer like webcam, usb drive etc. Inheritance helps with this.
+```
+class Printer(Device):
+    def __init__(self, name, connected_by, capacity):
+        self.name = name
+        self.connected_by = connected_by
+        self.connected = True
+        self.capacity = capacity
+```
+We have created a new class Printer which inherits from the Device class. This way we can use the attributes and methods of the Device class in the Printer class. The Device class is the parent class and the Printer class is the child class.
+
+We do not need to initialize the name, connected_by, connected attributes in the Printer __init__() method when this is already being done in the Device class. 
+```
+class Printer(Device):
+    def __init__(self, name, connected_by, capacity):
+        super().__init__(name, connected_by)
+        self.capacity = capacity
+        self.remaining_pages = capacity
+    def __str__(self):
+        return f'{super().__str__()} ({self.remaining_pages} pages remaining)'
+    def print(self, pages):
+        if not self.connected:
+            print('Printer is not connected')
+            return
+        print(f'Printing {pages} pages.')
+        self.remaining_pages -= pages
+```
+Now we can instantiate a printer object
+```
+printer = Printer('Printer', 'USB', 500)
+printer.print(50)
+print(printer)
+```
+The first line instantiates a new printer object. It initializes the attributes in the parent class as well. The second line prints 50 pages and reduced the remaining_pages attribute accordingly. The third line prints out our representation of the printer object
+```
+Device 'Printer' (USB) (450 pages remaining)
+```
+What happens when we want to run
+```
+printer.disconnect()
+```
+Python will look for the disconnect method in the Printer class. Upon not finding there, it will look for the method in the Device class. There it will find the method and then it will run the code inside the disconnect() method.
+
+## Class Composition in Python
+
+There are cases where composition makes more sense than inheritance. Consider a bookshelf which is composed of many books. We could create a bookshelf class as a parent class and then create book class as child class where the book class inherits from bookshelf class. However, this does not make much sense as inheritance is usually used when the child shares certain attributes of the parent and has a few other attributes of their own. Hence inheritance does not apply in this case as a book does not share any attribute with bookshelf.
+
+However, a bookshelf is composed of many books. So we could write our class such that this property is reflected.
+```
+class Bookshelf:
+    def __init__(self, *books):
+        self.books = books
+    
+    def __str__(self):
+        return f'Bookshelf with {len(self.books)} books'
+
+class Book:
+    def __init__(self, name):
+        self.name = name
+    
+    def __str__(self):
+        return f'Book({self.name})'
+```
+Then we can create a few book objects and then instantiate a bookshelf class with many books in it.
+```
+book1 = Book('Harry Potter')
+book2 = Book('Fluent Python')
+shelf = Bookshelf(book1, book2)
+print(shelf)
+```
+This will print out 
+```
+Bookshelf with 2 books
+```
+in the console.
+
+## Type Hinting in Python
+
+```
+def list_avg(sequence: List) -> float:
+    return sum(sequence)/len(sequence)
+```
+Here we are telling python that the sequence expected here is a list and the return type will be a float.
+```
+from typing import List
+class Book:
+    pass
+class BookShelf:
+    def __init__(self, books: List(Book)):
+        self.books = books
+```
+Lets look at a more elaborate example.
+```
+class Book:
+    TYPES = ('hardcover', 'paperback')
+
+    def __init__(self, name: str, book_type: str, weight: int):
+        self.name = name
+        self.book_type = book_type
+        self.weight = weight
+    
+    def __repr__(self) -> str:
+        return f'<Book({self.name}, {self.book_type}, {self.weight})>'
+    
+    @classmethod
+    def hardcover(cls, name: str, weight: int) -> 'Book':
+        return cls(name, cls.TYPES[0], weight)
+    
+    @classmethod
+    def softcopy(cls, name: str, weight: int) -> 'Book':
+        return cls(name, cls.TYPES[1], weight)
+```
+The return type of the class methods is the class itself. When the return type is class itself, we have to write the return type in quotes. If it is any other class, we do not have to put the class name in quotes.
+
+
+
+
+
+
+
+
+
+
+
+
 
