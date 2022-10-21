@@ -1368,11 +1368,226 @@ class Book:
     def softcopy(cls, name: str, weight: int) -> 'Book':
         return cls(name, cls.TYPES[1], weight)
 ```
-The return type of the class methods is the class itself. When the return type is class itself, we have to write the return type in quotes. If it is any other class, we do not have to put the class name in quotes.
+The return type of the class methods is the class itself. When the return type is the class itself, we have to write the return type in quotes. If the return type is any other class, we do not have to put the class name in quotes.
+
+## Importing in Python
+
+Importing is used when you want to get code fro other python files into your current file.
+Consider a folder called Import_in_python with 2 files in it called code.py and mymodule.py.
+```
+Import_in_python
+    |
+    |----code.py
+    |----mymodule.py
+```
+In mymodule.py, we will write the following code.
+```
+def divide(divdend, divisor):
+    return dividend / divisor
+
+print('mymodule.py: ', __name__)
+```
+__name__ is a global variable in python and it stores the name of the file. If we run mymodule.py, then the following is printed in the console.
+```
+mymodule.py: __main__
+```
+This means the __name__ variable takes the value '__main__' when it is in the file that is run.
+
+Now, in code.py, we will write the following code
+```
+from mymodule import divide
+```
+This is how to import a specific thing from mymodule.py. In this case we are importing the function divide.
+
+Alternately, if we want to import the entire file, then we write the following code
+```
+import mymodule
+```
+To access the divide function we run
+```
+import mymodule
+mymodule.divide(10, 5)
+```
+Let us continue with the former style
+```
+from mymodule import divide
+print(divide(10, 5))
+```
+When we run this file, the following gets printed in the console.
+```
+mymodule.py: mymodule
+2.0
+```
+The __name__ variable now takes the path of the file, which, in this case, is mymodule. 
+
+Where does python look for the files and code that we ask it to import? The sys module helps us answer this question.
+```
+import sys
+
+print(sys.path)
+```
+This will print out a list of paths that python will look at to find the file that we are asking it to import. When Python does not find the file we asking it to import, Python will throw us an error
+```
+ModuleNotFoundError: No module named '<modulename>'
+```
+The first path in the sys.path list will always be the path from which the code ran. 
+
+We can also import a file inside another folder that is in the same folder level.
+
+```
+Import_in_python
+    |
+    |----libs
+    |      |
+           |----__init__.py 
+    |      |----mylib.py 
+    |
+    |----code.py
+    |----mymodule.py
+```
+
+Now, in code.py, if we want to import mylib, then we run
+```
+import libs.mylib
+```
+Note that, in some older versions of python, we have to include a __init__.py file in the libs folder. The file does not need to contain any code, even an empty file will do.
+
+To see all the imported modules, we can run
+```
+import sys
+print(sys.modules)
+```
+When Python imports a module, it runs through the entire module executing all the code inside the module. It then stores the module in sys.modules so that it can be used when required later.
 
 
+## Relative Imports in Python
 
+Let us take the same file structure we had earlier.
 
+```
+Import_in_python
+    |
+    |----libs
+    |      |
+           |----__init__.py 
+    |      |----mylib.py 
+    |
+    |----code.py
+    |----mymodule.py
+```
+
+We will add a new folder in the libs folder called operations which will have file called operator.py
+
+```
+Import_in_python
+    |
+    |----libs
+    |      |
+    |      |----operations
+    |      |        |
+    |      |        |----__init__.py
+    |      |        |----operator.py
+    |      | 
+    |      |----__init__.py 
+    |      |----mylib.py 
+    |
+    |----code.py
+    |----mymodule.py
+```
+
+Lets review the code in each file.
+
+In code.py, we have
+```
+from mymodule import divide
+
+print('code.py:', __name__)
+print(divide(10, 5))
+```
+When we run this, it will see the import statement and it will immediately move to executing the code inside mymodule.py
+
+In mymodule.py, we have
+```
+import libs.mylib
+
+def divide(dividend, divisor):
+    return dividend / divisor
+
+print('mylib:', __name__)
+```
+When this starts executing, python will pause at the first line and move to executing mylib.py
+
+In mylib.py, we have 
+```
+import libs.operations.operator
+
+print('mylib.py:', __name__)
+```
+When this starts executing, python will pause at the first line and mov to executing operator.py.
+
+In operator.py, we have
+```
+print('operator.py:', __name__)
+```
+When this executes, it will print 'operator.py: libs.operators.operator' in the console. Then it will continue from the first line in mylib.py, where it had paused earlier, and will print 'mylib.py: libs.mylib'. Then python will resume from the first line in mymodule.py where it had paused and will print 'mymodule.py: mymodule'. Then we will get back to the file we ran first. Python will then print 'mycode.py: __main__' and then 2.0 which is the result of the divide function we called in code.py.
+
+Let us look at the output
+```
+operator.py: libs.operations.operator
+mylib.py: libs.mylib
+mymodule.py: mymodule
+mycode.py: __main__
+2.0
+```
+Note that we have not used relative imports yet. These are all absolute imports as we have specified the path in full for each import.
+
+In the output, we see some names seperated by the '.' and some names not seperated by '.'. The right most names with respect to the '.' is the filename. The names to the left of the '.' are folder names. We can do relative imports with files that have folder names. We cannot do relative imports with names that have only filenames. 
+
+To do a relative import, we have to use the following
+```
+from .mymodule import divide
+```
+
+The single '.' refers to the current folder. So the above statement means, from the current folder, look at the mymodule file and import the divide function. Given that this line is in the mycode.py file, this makes sense because the mymodule.py file is located in the same folder as the mycode.py file.
+
+However, this gives an error. Python actually tries to look for a module name '__main__.mymodule'. This is because the name of this file, as seen in the __name__ variable, is '__main__'.
+There is no module called mymodule in __main__.
+
+Similarly if we run the following in mymodule.py
+```
+from .libs import mylib
+```
+Python will still throw an error, because it searches for a folder, but there is no folder in the __name__ variable in this file. The __name__ variable has the value 'mymodule' and this value does not have a folder in it. 
+
+Lets see what happens when we run this in mylib.py
+```
+from .operations import operator
+```
+The __name__ variable in this file has the value 'libs.mylib'. Python removes the filename and then appends operations to libs folder. So we get libs.operations and Python finds this path in its path list and hence is able to access the operator.py module. 
+
+Note that this works only if we run the code.py file. If we run the mylib.py file, then the __name__ variable takes the value .__main__ and hence Python will throw an error because it cannot find __main__.operations.
+
+Lets see what happends when we run the following in operator.py file
+```
+from ..mylib import *
+```
+In this case the __name__ variabe in operator.py takes the value libs.operations.operator. When Python seen '..' in the import statement, then it removes the operator and operaations part from the the __name__ value and attached mylib to it. So Python finds libs.mylib in the path and hence Python is able to import the desired code.
+
+## Errors in Python
+
+Let us look at the divide function that we explored earlier.
+```
+def divide(dividend, divisor):
+    if divisor == 0:
+        print('Cannot divide by 0')
+        return
+    return dividend/divisor
+```
+If we run the following, no error will be thrown. There will be a print statement by the program continues as it is.
+
+```
+divide(10, 0)
+```
 
 
 
