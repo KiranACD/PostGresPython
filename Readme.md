@@ -966,6 +966,88 @@ The above code block will print 'Rolf' in the console.
 
 ## Mutability in Python
 
+Given 2 lists
+```
+a = [1, 2, 3]
+b = a
+```
+a and b are references to the same list.
+
+If you create 2 lists
+```
+a = [1, 2, 3]
+b = [3, 4, 5]
+```
+a and b point to different lists store in seperate memory location.
+
+We can change/mutate a list after creating it. This means lists are mutable.
+
+Some values cannot be changed. They are called immutable. For example, tuples are immutable. Tuples cannot be modified.
+
+Now consider 2 integers.
+```
+a = 8585
+b = 8585
+```
+In this case, a and b point to the same memory location. Integers are also immutable. You cannot change them. So when you do
+```
+a = 8586
+```
+a starts pointing to a new object that contain 8586.
+
+Like integers, strings, floats and boolean are also immutable.
+
+To create an immutable class/object, do not add any methods in the class that can change the object's attributes.
+
+```
+a = 'hello'
+b = a
+```
+if we do
+```
+a += ' world.'
+```
+b will still be pointing to 'hello' while a will be pointing to 'hello world'.
+
+It is a bad idea to create mutable default parameters. Let us look at an example.
+```
+class Student:
+    def __init__(self, name: str, grades: List(int) = []):
+        self.name = name
+        self.grades = grades
+    def take_exam(self, result: int):
+        self.grades.append(result)
+```
+In this case, suppose we create 2 objects.
+```
+bob = Student('Bob')
+rolf = Student('Rolf')
+bob.take_exam(90)
+print(bob.grades)
+print(rolf.grades)
+```
+Both bob and rolf's grades list will be [90]. How did this happend? Because Python assigns default values to parameter at time of definition.
+So in both objects the grades list is pointing to the same default value. Hence any change in the grades list in bob object or rolf object will result in change in the other objects grades list.
+
+The solution is to not have mutable values as the default.
+```
+from typing import List, Optional
+class Student:
+    def __init__(self, name: str, grades: Optional[List[int]] = None):
+        self.name = name
+        self.grades = grades or []
+    def take_exam(self, result: int):
+        self.grades.append(result)
+```
+
+Now this works,
+```
+bob = Student('Bob')
+rolf = Student('Rolf')
+bob.take_exam(90)
+print(bob.grades)
+print(rolf.grades)
+```
 
 ## Object-Oriented Programming in Python
 
@@ -1583,17 +1665,528 @@ def divide(dividend, divisor):
         return
     return dividend/divisor
 ```
-If we run the following, no error will be thrown. There will be a print statement by the program continues as it is.
+If we run the following, no error will be thrown. There will be a print statement by the program and it continues as it is.
 
 ```
 divide(10, 0)
 ```
 
+Consider a case that will use the divide function above. We have a list of grades and we want the average of all grades.
+```
+grades = []
+average = divide(sum(grades), len(grades))
+print(f'The average is {average}')
+```
+When we run this, first 'Cannot divide by 0' will be printed in the console. Then in the next line, it will print 'The average is None'.
+
+This is not clear to a user who expects to read something about grades. 
+
+We can restructure the grades code to do this.
+```
+grades = []
+if len(grades) == 0:
+    print('You dont have any grades yet.')
+    exit()
+
+average = divide(sum(grades), len(grades))
+print(f'The average grade is {average}')
+```
+Now, the user gets to read a message related to grades. However, there is a cleaner way to structure this operation by raising an error
+```
+def divide(dividend, divisor):
+    if divisor == 0:
+        raise ZeroDivisionError('Divisor cannot be 0.')
+    return dividend/divisor
+
+grades = []
+average = divide(sum(grades), len(grades))
+print(f'The average grade is {average}')
+```
+In this case, when the divisor is 0, a ZeroDivisorError will be raised a full traceback will be provided.
+```
+Traceback (most recent call last):
+  File "playground.py", line 18, in <module>
+    average = divide(sum(grades), len(grades))
+  File "playground.py", line 15, in divide
+    raise ZeroDivisionError('Divisor cannot be 0.')
+ZeroDivisionError: Divisor cannot be 0.
+```
+Python provides a traceback that points out the file location, the line number of the bug and the reason for the error.
+In this case, the error occurred in playground.py, line 15, in divide function. The error is ZeroDivisionError. When error is raised, the execution of the code stops at that point.
+
+Python allows us to catch this error and maintain the flow of the program so that the execution does not stop. It will also provide us the ability to print a relevant message that a user can understand
+```
+def divide(dividend, divisor):
+    if divisor == 0:
+        raise ZeroDivisionError('Divisor cannot be 0.')
+    return dividend/divisor
+
+grades = []
+try:
+    average = divide(sum(grades), len(grades))
+    print(f'The average grade is {average}')
+except ZeroDivisionError as e:
+    print('Grades list is empty')
+```
+The syntax to catch the error/exception is to put the main part of the code in the try block. The except block will contain the code that we want executed when an error/exception is raised. The variable e takes the value of the exception object, which in this case is 'Divisor cannot be 0'. In this case, because the grades list is empty, the error/exception will be raised while using the divide function and hence the except block will run.
+
+Apart from ZeroDivisionErrors, there are a number of built-in errors that we can create for different things. Some examples are TypeError (wrong type), ValueError (unexpected value), RuntimeError. We can even create our own error types.
+
+Another important point to note in the syntax is
+```
+def divide(dividend, divisor):
+    if divisor == 0:
+        raise ZeroDivisionError('Divisor cannot be 0.')
+    return dividend/divisor
+
+grades = []
+try:
+    average = divide(sum(grades), len(grades))
+except ZeroDivisionError as e:
+    print('Grades list is empty')
+else:
+    print(f'The average grade is {average}')
+```
+
+This will also produce the same outcome as the previous code. The else block will run only if try block runs without any error. This is done in case we dont want to put all of our code int he same block.
+
+```
+def divide(dividend, divisor):
+    if divisor == 0:
+        raise ZeroDivisionError('Divisor cannot be 0.')
+    return dividend/divisor
+
+grades = []
+try:
+    average = divide(sum(grades), len(grades))
+except ZeroDivisionError as e:
+    print('Grades list is empty')
+else:
+    print(f'The average grade is {average}')
+finally:
+    print('We are done!')
+```
+The finally block will always run, irrespective of whether an error/exception was raised or not.
+
+Lets look at an elaborate version of the above code.
+
+```
+def divide(dividend, divisor):
+    if divisor == 0:
+        raise ZeroDivisionError('Divisor cannot be 0.')
+    return dividend/divisor
+
+students = [
+    {'name':'Bob', 'grades':[75, 90]},
+    {'name':'Rolf', 'grades':[]},
+    {'name':'Jen', 'grades':[100, 90]},
+]
+try:
+    for student in students:
+        name = student['name']
+        grades = student['grades']
+        average = divide(sum(grades), len(grades))
+        print(f'{name} averaged {average}')
+except ZeroDivisionError as e:
+    print(f'ERROR: {name} has no grades')
+else:
+    print('--- All student averages calculated ---')
+finally:
+    print('--- End of student average calculation ---')
+```
+When the iteration gets to Rolf, who has no grades, the code in try block will raise error and the except block will execute for Rolf. The else block runs only if the try block runs successfully, which is not the case here. The finally block code runs and the program ends. If Rolf has some grades, then the try block will execute successfuly and then the else block and the finally block runs and the program ends.
 
 
+## Custom Error Classes
 
+Consider a class called Book.
+```
+class Book:
+    def __init__(self, name: str, page_count: int):
+        self.name = name
+        self.page_count = page_count
+        self.pages_read = 0
+    
+    def __repr(self):
+        return (
+            f'<Book {self.name}, read {self.pages_read} out of {self.page_count} pages>'
+        )
 
+    def read(self, pages: int):
+        self.pages_read += pages
+        print(f'You have now read {self.pages_read} out of {self.page_count}')
+```
+There is a bug in this code. Let us see what it is.
+```
+python101 = Book('Python 101', 50)
+python101.read(35)
+python101.read(50)
+```
+In this case, the last output line will be 'You have now read 85 pages out of 50 pages.'
+This is clearly not possible. Making changes, we will raise a error when the number of pages read > page count.
 
+```
+class Book:
+    def __init__(self, name: str, page_count: int):
+        self.name = name
+        self.page_count = page_count
+        self.pages_read = 0
+    
+    def __repr(self):
+        return (
+            f'<Book {self.name}, read {self.pages_read} out of {self.page_count} pages>'
+        )
+
+    def read(self, pages: int):
+        if self.pages_read + pages > self.page_count:
+            raise TooManyPagesReadError(
+                f'You tried to read {self.pages_read + pages} pages but this book only has {self.page_count} pages.'
+            )
+        self.pages_read += pages
+        print(f'You have now read {self.pages_read} out of {self.page_count}')
+```
+The TooManyPagesReadError is not a built-in error type. But we can define our own errors.
+
+```
+class TooManyPagesReadError(ValueError):
+    pass
+
+class Book:
+    def __init__(self, name: str, page_count: int):
+        self.name = name
+        self.page_count = page_count
+        self.pages_read = 0
+    
+    def __repr(self):
+        return (
+            f'<Book {self.name}, read {self.pages_read} out of {self.page_count} pages>'
+        )
+
+    def read(self, pages: int):
+        if self.pages_read + pages > self.page_count:
+            raise TooManyPagesReadError(
+                f'You tried to read {self.pages_read + pages} pages but this book only has {self.page_count} pages.'
+            )
+        self.pages_read += pages
+        print(f'You have now read {self.pages_read} out of {self.page_count}')
+```
+
+We defined the error and made it inherit from the ValueError class. But we named it something else.
+What happens when we try to run this.
+```
+python101 = Book('Python 101', 50)
+python101.read(35)
+python101.read(50)
+```
+The error raised is
+```
+Traceback (most recent call last):
+  File "playground.py", line 60, in <module>
+    python101.read(50)
+  File "playground.py", line 52, in read
+    raise TooManyPagesReadError(
+__main__.TooManyPagesReadError: You tried to read 85 pages but this book only has 50 pages.
+```
+We were able to raise our own custom error messaage.
+
+In order to make error messages specific to the users and what they expect, we can catch the error and using the except block, execute a piece of code that we want for better communication.
+
+In summary, when we want to define our own error class, then we need to make sure that they are inheriting the appropriate error class like ValueError, TypeError etc.
+
+## First Class Functions in Python
+
+First class functions mean that functions are just variables. This means we can pass them as arguments to other functions and in general use them the same way we use variables.
+```
+def divide(dividend, divisor):
+    if divisor == 0:
+        raise ZeroDivisionError('Divisor cannot be 0.')
+    return dividend/divisor
+
+def calculate(*values, operator):
+    return operator(*values)
+```
+If we wanted to use the divide function using the calculate function, we use
+```
+result = calculate(20, 4, operator=divide)
+```
+Here, we are using divide as a variable and passing it to the calculate function. divide is an example of a first class function. Note that when using function as a variable we do not call it, so in this case we do operator = divide and not operator = divide().
+
+Functions in Python just happen to be variables that are callable. Let us look at another example.
+```
+def search(sequence, expected, finder):
+    for elem in sequence:
+        if finder(elem) == expected:
+            return elem
+    raise RunTimeError(f'Could not find an element with {expected}')
+
+friends = [
+    {'name': 'Rolf', 'age': 24},
+    {'name': 'Adam', 'age': 30},
+    {'name': 'Anne', 'age': 27},
+]
+
+def get_friend_name(friend):
+    return friend['name']
+```
+In this case, get_friend_name is the finder function. It runs on each element of the iteration and returns the 'name' property of the element of the sequence. 
+
+When we run
+```
+print(search(friends, 'Bob Smith', get_friend_name))
+```
+We will get a RunTimeError. Similarly when run
+```
+print(search(friends, 'Rolf', get_friend_name))
+```
+Python will print the first row dictionary in the console.
+```
+{'name': 'Rolf', 'age': 24}
+```
+Can you replace the get_friend_name with a lambda function?
+
+There is an itemgetter module in the operator built-in package that will perform the same role.
+```
+from operator import itemgetter
+
+print(searh(friends, 'Rolf', itemgetter('name')))
+```
+This works the same way too.
+
+## Decorators in Python
+
+Decorators allow us to modify function easily.
+
+Consider this sceanrio
+```
+user = {'username':'jose', 'access_level':'guest'}
+
+def get_admin_password():
+    return '1234'
+
+print(get_admin_password)
+```
+We will get the admin password even though the user access level is only guest. We should secure the get_admin_password function because only admins should be able to get the password.
+
+```
+user = {'username':'jose', 'access_level':'guest'}
+
+def get_admin_password():
+    return '1234'
+
+if user['access_level'] == 'admin':
+    print(get_admin_password)
+```
+In this case the get_admin_password function itself is unsecure. Which means anyone could call the function and receive the admin password.
+
+Let us define a secure function
+
+```
+user = {'username':'jose', 'access_level':'guest'}
+
+def get_admin_password():
+    return '1234'
+
+def secure_get_admin(): 
+    if user['access_level'] == 'admin':
+        return '1234'
+```
+get_admin_password is still there. So we should delete the get_admin_password.
+secure_get_admin does protect the password.
+
+However, we will have to add the if statement in every function where we want to secure the access. There is a better way.
+
+We will use a decorator to modify the get_admin_password functon to make it secure.
+
+```
+user = {'username':'jose', 'access_level':'guest'}
+
+def get_admin_password():
+    return '1234'
+
+def secure_function(func): 
+    if user['access_level'] == 'admin':
+        return func
+
+get_admin_password = secure_funcion(get_admin_password)
+print(get_admin_password())
+```
+
+When secure_function is called while passing the get_admin_password, it checks if user's access level is 'admin'. If it is, then the same function get_admin_password is returned. When the get_admin_password function is called, it returns the password. If the access level is not 'admin', then the secure_function returns None and in this case the get_admin_password takes the None object. Calling get_admin_password results in an error as Nonetype objects are not callable.
+
+This is not quite what we want though, because calling the get_admin_password leads to error. Instead, we can make the following change
+```
+user = {'username':'jose', 'access_level':'guest'}
+
+def get_admin_password():
+    return '1234'
+
+def make_secure(func):
+    def secure_function():
+        if user['access_level'] == 'admin':
+            return func()
+    return secure_function
+
+get_admin_password = make_secure(get_admin_password)
+print(get_admin_password())
+```
+
+The make_secure function replaces the get_admin_password function with the secure_function defined in the make_secure function. Currently, if the access level is not 'admin', the get_admin_password function call returns None. We can make it descriptive in case the access level is not 'admin'
+```
+user = {'username':'jose', 'access_level':'guest'}
+
+def get_admin_password():
+    return '1234'
+
+def make_secure(func):
+    def secure_function():
+        if user['access_level'] == 'admin':
+            return func()
+        else:
+            return f'No admin permissions for {user['username']}'
+    return secure_function
+
+get_admin_password = make_secure(get_admin_password)
+print(get_admin_password())
+```
+
+This time, the get_admin_password function call returns the message incase the user level is not 'admin'.
+
+Instead of
+```
+get_admin_password = make_secure(get_admin_password)
+```
+we can redesign as
+```
+user = {'username':'jose', 'access_level':'guest'}
+
+def make_secure(func):
+    def secure_function():
+        if user['access_level'] == 'admin':
+            return func()
+        else:
+            return f'No admin permissions for {user['username']}'
+    return secure_function
+
+@make_secure
+def get_admin_password():
+    return '1234'
+
+get_admin_password = make_secure(get_admin_password)
+print(get_admin_password())
+```
+
+Replacing the get_admin_password function with the secure_function changes the name of the get_admin_password function.
+
+If you want to retain the name of the function, we can include the following in our code.
+```
+import functools
+user = {'username':'jose', 'access_level':'guest'}
+
+def make_secure(func):
+    @functools.wraps(func)
+    def secure_function():
+        if user['access_level'] == 'admin':
+            return func()
+        else:
+            return f'No admin permissions for {user['username']}'
+    return secure_function
+
+@make_secure
+def get_admin_password():
+    return '1234'
+
+get_admin_password = make_secure(get_admin_password)
+print(get_admin_password())
+```
+
+There is an issue in the above design. Imagine if our get_admin_password was replaced by 
+```
+get_password(panel):
+    if panel == 'admin':
+        retun '1234'
+    elif panel == 'billing':
+        return 'super_secure_password'
+```
+In this case, decorating the get_password with make_secure will result in an error because the secure_function does not take any argument.
+
+If you do the following
+```
+import functools
+user = {'username':'jose', 'access_level':'guest'}
+
+def make_secure(func):
+    @functools.wraps(func)
+    def secure_function(panel):
+        if user['access_level'] == 'admin':
+            return func(panel)
+        else:
+            return f'No admin permissions for {user['username']}'
+    return secure_function
+
+@make_secure
+def get_password(panel):
+    if panel == 'admin':
+        return '1234'
+    elif panel == 'billing':
+        return 'super_secure_password'
+
+get_admin_password = make_secure(get_admin_password)
+print(get_admin_password('billing'))
+```
+This is going to tie the make_secure function with the get_password function because of the specific parameter in the secure function called panel. We want a generic decorator that we can use to secure any other function that takes any number or type of paramaters.
+
+```
+import functools
+user = {'username':'jose', 'access_level':'guest'}
+
+def make_secure(func):
+    @functools.wraps(func)
+    def secure_function(*args, **kwargs):
+        if user['access_level'] == 'admin':
+            return func(*args, **kwargs)
+        else:
+            return f'No admin permissions for {user['username']}'
+    return secure_function
+
+@make_secure
+def get_password(panel):
+    if panel == 'admin':
+        return '1234'
+    elif panel == 'billing':
+        return 'super_secure_password'
+
+get_admin_password = make_secure(get_admin_password)
+print(get_admin_password('billing'))
+```
+This way, we can pass any number and type of arguments to the function that is being replacing the old function. This makes the decorator generic and can be used to secure any function that takes any kind of parameters.
+
+You can even create decorators with parameters that we can pass arguments to while decorating.
+```
+import functools
+user = {'username':'jose', 'access_level':'guest'}
+
+def make_secure(access_level):
+    def decorator(func):
+        @functools.wraps(func)
+        def secure_function(*args, **kwargs):
+            if user['access_level'] == access_level:
+                return func(*args, **kwargs)
+            else:
+                return f'No {access_level} permissions for {user['username']}'
+        return secure_function
+    return decorator
+
+@make_secure('admin')
+def get_admin_password():
+    return '1234'
+
+@make_secure('guest')
+def get_dashboard_password():
+    return 'user: user_password'
+
+print(get_admin_password())
+print(get_dashboard_password())
+```
 
 
 
