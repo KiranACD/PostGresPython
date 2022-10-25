@@ -1,6 +1,6 @@
 from entrymodel import EntryModel
+
 class IOClient:
-    
     @staticmethod
     def get_entry():
         entry_content = input('Make your entry: ')

@@ -9,9 +9,10 @@ menu = '''Please select one of the following options:
 
 Your selection: '''
 welcome = 'Welcome to the programming diary'
-listdb = ListDb.get_instance()
 ioclient = IOClient()
-dbclient = DbClient(listdb)
+filename = 'JournalEntry.db'
+#dbclient = DbClient('list')
+dbclient = DbClient('sqlite', filename=filename)
 print(welcome)
 print()
 while True:
