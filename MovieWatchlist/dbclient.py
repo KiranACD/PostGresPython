@@ -7,9 +7,9 @@ class DBClient:
     def insert_movie(self, movie):
         self.db_instance.insert_movie(movie)
     
-    def fetch_movies(self, where=[]):
-        data = self.db_instance.fetch_movies(where=where)
+    def fetch_movies(self, query=None, username=None):
+        data = self.db_instance.fetch_movies(query=query, username=username)
         return data
     
-    def watch_movie(self, title):
-        pass
+    def watch_movie(self, username, title):
+        self.db_instance.watch_movie(username, title)
