@@ -12,7 +12,8 @@ Please select one of the following options:
 4. Add watched movie
 5. View watched movies
 6. Register in the app
-7. Exit
+7. Search for a movie
+8. Exit
 
 Your selection: '''
 
@@ -29,7 +30,7 @@ print()
 while True:
     user_input = input(menu)
     print()
-    if user_input == '7':
+    if user_input == '8':
         exit()
     elif user_input == '1':
         movie = IOClient.get_movie_input()
@@ -46,19 +47,35 @@ while True:
     elif user_input == '4':
         username = IOClient.get_username()
         movie_title = IOClient.get_watched_movie()
+        movie = dbclient.fetch_movies(query='movie_id', movie_name=movie_title)
         try:
-            dbclient.watch_movie(username, movie_title)
+            movie_id = movie[0]['id']
         except Exception as e:
             print(e)
             print(f'Movie {movie_title} not in database!')
             print()
+            continue
+        release_date = movie[0]['release_timestamp']
+        if release_date > datetime.datetime.today().timestamp():
+            print(f'Movie {movie_title} not yet released!')
+            print()
+            continue
+        dbclient.watch_movie(username, movie_id)
     elif user_input == '5':
         sql_query = 'watched_movies'
         username = IOClient.get_username()
         movies = dbclient.fetch_movies(query=sql_query, username=username)
-        IOClient.show_watched_movies(username, movies)
+        IOClient.show_movies(username, movies)
     elif user_input == '6':
-        pass
+        username = IOClient.get_username()
+        dbclient.insert_user(username)
+    elif user_input == '7':
+        search_term = IOClient.get_search_term()
+        movies = dbclient.search_movies(search_term)
+        if movies:
+            IOClient.show_movies('Matching', movies)
+        else:
+            print(f'Found no movies for search term: {search_term}')
     else:
         print(f'Invalid option! {user_input}')
         print()

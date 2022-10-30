@@ -7,9 +7,16 @@ class DBClient:
     def insert_movie(self, movie):
         self.db_instance.insert_movie(movie)
     
-    def fetch_movies(self, query=None, username=None):
-        data = self.db_instance.fetch_movies(query=query, username=username)
+    def fetch_movies(self, query=None, username=None, movie_name=None):
+        data = self.db_instance.fetch_movies(query=query, username=username, movie_name=movie_name)
         return data
     
     def watch_movie(self, username, title):
         self.db_instance.watch_movie(username, title)
+    
+    def insert_user(self, username):
+        self.db_instance.insert_user(username)
+    
+    def search_movies(self, search_term):
+        data = self.db_instance.search_movies(search_term)
+        return data

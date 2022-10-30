@@ -14,20 +14,25 @@ class IOClient:
     
     @staticmethod
     def get_watched_movie():
-        title = input('Enter the title of the movie you have watched: ')
-        return title
+        movie_id = input('Enter the id of the movie you have watched: ')
+        return movie_id
     
     @staticmethod
     def get_username():
         username = input('Username: ')
         return username
+    
+    @staticmethod
+    def get_search_term():
+        search_term = input('Enter the search term: ')
+        return search_term
 
     @staticmethod
     def show_movies(heading, movies):
         print(f'-- {heading} movies --')
         for movie in movies:
             date = datetime.datetime.fromtimestamp(movie["release_timestamp"]).strftime('%b %d %Y')
-            print(f'{movie["title"]} (on {date})\n')
+            print(f'{movie["id"]}: {movie["title"]} (on {date})\n')
     
     @staticmethod
     def show_watched_movies(username, movies):
